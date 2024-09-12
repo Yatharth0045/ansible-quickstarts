@@ -31,6 +31,8 @@
 2. Run `ping` module as follows
     ```bash
         ansible all -i inventory -m ping
+        ansible aws_remote -i inventory -m ping
+        ansible local -i inventory -m ping
     ```
 
 ### Cleanup
