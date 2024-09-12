@@ -26,6 +26,13 @@
 - Install with dnf : `sudo dnf install -y ansible`
 - Install with apt : `sudo apt install -y ansible`
 
+### Run module `ping`
+1. Create `inventory` on controller node as `ansible_basics/inventory`
+2. Run `ping` module as follows
+    ```bash
+        ansible all -i inventory -m ping
+    ```
+
 ### Cleanup
 
 1. Run the cleanup script

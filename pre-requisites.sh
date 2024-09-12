@@ -69,6 +69,11 @@ export WORKER_UBUNTU_AMD_ID=$(aws ec2 run-instances --image-id ${UBUNTU_AMI_AMD}
 echo "✅ Created worker node for ubuntu-amd: ID is ${WORKER_UBUNTU_AMD_ID}"
 WORKER_UBUNTU_AMD_IP=$(aws ec2 describe-instances --instance-ids ${WORKER_UBUNTU_AMD_ID} --query "Reservations[*].Instances[*].PublicIpAddress" --output text)
 echo "✅ SSH for worker node ubuntu-amd: ssh -i ${KEY_PAIR_PATH} ${UBUNTU_USER}@${WORKER_UBUNTU_AMD_IP}"
+
+echo "⏳ Copying SSH key to controller node ..."
+scp -i ${KEY_PAIR_PATH} ${KEY_PAIR_PATH} ${AL_2023_USER}@${CONTROLLER_IP}:${KEY_NAME}
+echo "✅ Copied SSH key to controller node"
+
 echo """
 Controller Node: ssh -A -i ${KEY_PAIR_PATH} ${AL_2023_USER}@${CONTROLLER_IP}
 Worker Node al2023-amd: ssh -i ${KEY_PAIR_PATH} ${AL_2023_USER}@${WORKER_AL_2023_AMD_IP}
