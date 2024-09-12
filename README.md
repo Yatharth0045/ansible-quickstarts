@@ -21,6 +21,13 @@
         ./pre-requisites.sh
     ```
 
+### Cleanup
+
+1. Run the cleanup script
+```bash
+    ./cleanup.sh
+```
+
 ### Install Ansible
 
 - Install with dnf : `sudo dnf install -y ansible`
@@ -35,9 +42,29 @@
         ansible local -i inventory -m ping
     ```
 
-### Cleanup
+## Ad-hoc-commands for Ansible
 
-1. Run the cleanup script
+### Ansible Configurations
 ```bash
-    ./cleanup.sh
+## List all configurations
+ansible-config list
+
+## View current configuration file
+ansible-config view
+
+## Show current setting 
+ansible-config dump
+
+## Create a basic ansible configuration file
+ansible-config init --disabled -t all > ansible.cfg
+```
+
+### Running against localhost, group: [local]
+ansible local -i inventory -m ping
+ansible local -i inventory -m gather_facts
+
+### Anisble Modules
+```
+- ping
+- gather_facts
 ```
