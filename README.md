@@ -18,7 +18,7 @@
 
     3. Run the `pre-requisites.sh` script
     ```bash
-    ./pre-requisites.sh
+        ./pre-requisites.sh
     ```
 
 ### Install Ansible
@@ -30,5 +30,5 @@
 
 1. Run the cleanup script
 ```bash
-./cleanup.sh
+    ./cleanup.sh
 ```
