@@ -1,0 +1,21 @@
+[amd_instances]
+ec2_user_amd ansible_host=54.236.227.130 ansible_user=ec2-user ansible_ssh_private_key_file='/Users/yatharth_1/Downloads/kk-yatharth.pem'
+ubuntu_user_amd ansible_host=54.175.37.108 ansible_user=ubuntu ansible_ssh_private_key_file='/Users/yatharth_1/Downloads/kk-yatharth.pem'
+
+; [arm_instances]
+; ec2_user_arm ansible_host=10.10.3.173 ansible_user=ec2-user
+; ubuntu_user_arm ansible_host=127.0.0.1 ansible_connection=local
+
+; [es_master]
+; master1 ansible_host=10.10.3.173 ansible_user=ec2-user es_node_master=true es_node_data=false
+
+; [es_data]
+; data1 ansible_host=10.10.3.173 ansible_user=ec2-user es_node_master=false es_node_data=true
+
+; [es_client]
+; client1 ansible_host=10.10.3.173 ansible_user=ec2-user es_node_master=false es_node_data=false es_node_ingest=true
+
+; [es_cluster:children]
+; es_master
+; es_data
+; es_client

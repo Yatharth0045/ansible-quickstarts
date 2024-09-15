@@ -39,25 +39,32 @@ export SUBNET_ID=$(aws ec2 describe-subnets --query "Subnets[0].SubnetId" --outp
 # export SUBNET_ID=$(aws ec2 describe-subnets --query "Subnets[*].{ID:SubnetId,VPC:VpcId,CIDR:CidrBlock,AZ:AvailabilityZone}" --output json | jq -r --arg ZONE "$ZONE" '.[] | select(.AZ == $ZONE) | .ID ')
 echo "✅ Fetched Subnet in zone $ZONE : ID is ${SUBNET_ID}"
 
+## Create controller node sg
 echo "⏳ Creating Sg for contorller node .... "
 export CONTROLLER_SG=$(aws ec2 create-security-group --group-name ansible-controller-sg --description "My security group for Ansible EC2 instance" --vpc-id ${VPC_ID} | jq -r '.GroupId')
 echo "✅ Created Security group for controller node : ID is ${CONTROLLER_SG}"
 
+echo "⏳ Opening port 22 in controller sg .... "
+export RESULT_CONTROLLER_PORT_22=$(aws ec2 authorize-security-group-ingress --group-id ${CONTROLLER_SG} --protocol tcp --port 22 --cidr 0.0.0.0/0 | jq -r '.Return')
+echo "✅ Opened port 22 for controller and worker node"
+
+## Create worker node sg
 echo "⏳ Creating Sg for worker node .... "
 export WORKER_SG=$(aws ec2 create-security-group --group-name ansible-worker-sg --description "My security group for EC2 worker instance" --vpc-id ${VPC_ID} | jq -r '.GroupId')
 echo "✅ Created Security group for worker node : ID is ${WORKER_SG}"
 
-echo "⏳ Opening port 22 in controller and worker sg .... "
-export RESULT_CONTROLLER_PORT_22=$(aws ec2 authorize-security-group-ingress --group-id ${CONTROLLER_SG} --protocol tcp --port 22 --cidr 0.0.0.0/0 | jq -r '.Return')
+echo "⏳ Opening port 22 in worker sg .... "
 export RESULT_WORKER_PORT_22=$(aws ec2 authorize-security-group-ingress --group-id ${WORKER_SG} --protocol tcp --port 22 --cidr 0.0.0.0/0 | jq -r '.Return')
 echo "✅ Opened port 22 for controller and worker node"
 
-echo "⏳ Creating EC2 controller instance"
-export CONTROLLER_ID=$(aws ec2 run-instances --image-id ${AL_2023_AMI_AMD} --instance-type ${AMD_INSTANCE_TYPE} --key-name ${KEY_NAME} --security-group-ids ${CONTROLLER_SG} --subnet-id ${SUBNET_ID} --count 1 --tag-specifications 'ResourceType=instance,Tags=[{Key=Name,Value=Ansible-controller-node}]' | jq -r '.Instances[0].InstanceId')
-echo "✅ Created controller node: ID is ${CONTROLLER_ID}"
-CONTROLLER_IP=$(aws ec2 describe-instances --instance-ids ${CONTROLLER_ID} --query "Reservations[*].Instances[*].PublicIpAddress" --output text)
-echo "✅ SSH for controller node: ssh -A -i ${KEY_PAIR_PATH} ${AL_2023_USER}@${CONTROLLER_IP}"
+## EC2 Controller node
+# echo "⏳ Creating EC2 controller instance"
+# export CONTROLLER_ID=$(aws ec2 run-instances --image-id ${AL_2023_AMI_AMD} --instance-type ${AMD_INSTANCE_TYPE} --key-name ${KEY_NAME} --security-group-ids ${CONTROLLER_SG} --subnet-id ${SUBNET_ID} --count 1 --tag-specifications 'ResourceType=instance,Tags=[{Key=Name,Value=Ansible-controller-node}]' | jq -r '.Instances[0].InstanceId')
+# echo "✅ Created controller node: ID is ${CONTROLLER_ID}"
+# CONTROLLER_IP=$(aws ec2 describe-instances --instance-ids ${CONTROLLER_ID} --query "Reservations[*].Instances[*].PublicIpAddress" --output text)
+# echo "✅ SSH for controller node: ssh -A -i ${KEY_PAIR_PATH} ${AL_2023_USER}@${CONTROLLER_IP}"
 
+## EC2 Worker node
 echo "⏳ Creating EC2 Worker node: al2023-amd"
 export WORKER_AL_2023_AMD_ID=$(aws ec2 run-instances --image-id ${AL_2023_AMI_AMD} --instance-type ${AMD_INSTANCE_TYPE} --key-name ${KEY_NAME} --security-group-ids ${WORKER_SG} --subnet-id ${SUBNET_ID} --count 1 --tag-specifications 'ResourceType=instance,Tags=[{Key=Name,Value=Ansible-al2023-amd-worker-node}]' | jq -r '.Instances[0].InstanceId')
 echo "✅ Created worker node for al2023-amd: ID is ${WORKER_AL_2023_AMD_ID}"
@@ -70,12 +77,13 @@ echo "✅ Created worker node for ubuntu-amd: ID is ${WORKER_UBUNTU_AMD_ID}"
 WORKER_UBUNTU_AMD_IP=$(aws ec2 describe-instances --instance-ids ${WORKER_UBUNTU_AMD_ID} --query "Reservations[*].Instances[*].PublicIpAddress" --output text)
 echo "✅ SSH for worker node ubuntu-amd: ssh -i ${KEY_PAIR_PATH} ${UBUNTU_USER}@${WORKER_UBUNTU_AMD_IP}"
 
-echo "⏳ Copying SSH key to controller node ..."
-scp -i ${KEY_PAIR_PATH} ${KEY_PAIR_PATH} ${AL_2023_USER}@${CONTROLLER_IP}:${KEY_NAME}
-echo "✅ Copied SSH key to controller node"
+## Copy key to controller node
+# echo "⏳ Copying SSH key to controller node ..."
+# scp -i ${KEY_PAIR_PATH} ${KEY_PAIR_PATH} ${AL_2023_USER}@${CONTROLLER_IP}:${KEY_NAME}
+# echo "✅ Copied SSH key to controller node"
 
 echo """
-Controller Node: ssh -A -i ${KEY_PAIR_PATH} ${AL_2023_USER}@${CONTROLLER_IP}
+Controller Node: ssh -i ${KEY_PAIR_PATH} ${AL_2023_USER}@${CONTROLLER_IP}
 Worker Node al2023-amd: ssh -i ${KEY_PAIR_PATH} ${AL_2023_USER}@${WORKER_AL_2023_AMD_IP}
 Worker Node ubuntu-amd: ssh -i ${KEY_PAIR_PATH} ${UBUNTU_USER}@${WORKER_UBUNTU_AMD_IP}
 """ > .ec2-login
