@@ -13,20 +13,16 @@ ubuntu_user_arm ansible_host=34.228.190.45 ansible_user=ubuntu ansible_ssh_priva
 amd_instances
 arm_instances
 
-; [arm_instances]
-; ec2_user_arm ansible_host=10.10.3.173 ansible_user=ec2-user
-; ubuntu_user_arm ansible_host=127.0.0.1 ansible_connection=local
+[elastic_search_master]
+master1 ansible_host=54.162.230.254 ansible_user=ec2-user es_node_master=true es_node_data=false es_node_ingest=false ansible_ssh_private_key_file='/Users/yatharth_1/Downloads/kk-yatharth.pem'
 
-; [es_master]
-; master1 ansible_host=10.10.3.173 ansible_user=ec2-user es_node_master=true es_node_data=false
+[elastic_search_data]
+master1 ansible_host=54.145.231.152 ansible_user=ec2-user es_node_master=false es_node_data=true es_node_ingest=false ansible_ssh_private_key_file='/Users/yatharth_1/Downloads/kk-yatharth.pem'
 
-; [es_data]
-; data1 ansible_host=10.10.3.173 ansible_user=ec2-user es_node_master=false es_node_data=true
+[elastic_search_client]
+master1 ansible_host=52.70.16.20 ansible_user=ec2-user es_node_master=false es_node_data=false es_node_ingest=true ansible_ssh_private_key_file='/Users/yatharth_1/Downloads/kk-yatharth.pem'
 
-; [es_client]
-; client1 ansible_host=10.10.3.173 ansible_user=ec2-user es_node_master=false es_node_data=false es_node_ingest=true
-
-; [es_cluster:children]
-; es_master
-; es_data
-; es_client
+[elastic_search:children]
+elastic_search_master
+elastic_search_data
+elastic_search_client
