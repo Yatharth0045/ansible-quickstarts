@@ -10,7 +10,7 @@ export AWS_REGION='us-east-1'
 ## Setting variables
 export KEY_NAME='kk-yatharth'
 export KEY_PAIR_PATH="${HOME}/Downloads/${KEY_NAME}.pem"
-export ZONE='us-east-1d'
+export ZONE='us-east-1a'
 export AL_2023_AMI_AMD='ami-0182f373e66f89c85'
 export UBUNTU_AMI_AMD='ami-0e86e20dae9224db8'
 export AL_2023_AMI_ARM='ami-0b947c5d5516fa06e'
@@ -60,13 +60,14 @@ launch_ec2() {
     export AMI_ID=$2
     export INSTANCE_TYPE=$3
     export SG_ID=$4
-    export KEY_NAME=${5:-'kk-yatharth'}
+    export USER=${5:-'ec2-user'}
+    export KEY_NAME=${6:-'kk-yatharth'}
     echo "⏳ Creating EC2 ${NODE_NAME} instance"
     export NODE_ID=$(aws ec2 run-instances --image-id ${AMI_ID} --instance-type ${INSTANCE_TYPE} --key-name ${KEY_NAME} --security-group-ids ${SG_ID} --subnet-id ${SUBNET_ID} --count 1 --tag-specifications "ResourceType=instance,Tags=[{Key=Name,Value=Ansible-${NODE_NAME}-node}]" | jq -r '.Instances[0].InstanceId')
     echo "✅ Created controller node: ID is ${NODE_ID}"
     IP=$(aws ec2 describe-instances --instance-ids ${NODE_ID} --query "Reservations[*].Instances[*].PublicIpAddress" --output text)
-    echo "✅ SSH for controller node: ssh -i ${KEY_PAIR_PATH} ${AL_2023_USER}@${IP}"
-    echo "${NODE_NAME} : ssh -i ${KEY_PAIR_PATH} ${AL_2023_USER}@${IP}" >> .ec2-login
+    echo "✅ SSH for controller node: ssh -i ${KEY_PAIR_PATH} ${USER}@${IP}"
+    echo "${NODE_NAME} : ssh -i ${KEY_PAIR_PATH} ${USER}@${IP}" >> .ec2-login
     echo "📄 Stored login info to file : .ec2-login"
 }
 
@@ -84,8 +85,9 @@ copy_key_to_controller() {
 ## Export vpc and subnet id
 export VPC_ID=$(aws ec2 describe-vpcs --query "Vpcs[*].{ID:VpcId,CIDR:CidrBlock}" --output json | jq -r '.[0] | .ID')
 echo "✅ Fetched VPC : ID is ${VPC_ID}"
-export SUBNET_ID=$(aws ec2 describe-subnets --query "Subnets[0].SubnetId" --output json | jq -r '.')
-echo "✅ Fetched Subnet in zone $ZONE : ID is ${SUBNET_ID}"
+# export SUBNET_ID=$(aws ec2 describe-subnets --query "Subnets[0].SubnetId" --output json | jq -r '.')
+export SUBNET_ID=$(aws ec2 describe-subnets --query "Subnets[*].{ID:SubnetId,VPC:VpcId,CIDR:CidrBlock,AZ:AvailabilityZone}" --output json | jq -r --arg ZONE "$ZONE" '.[] | select(.AZ == $ZONE) | .ID ')
+echo "✅ Fetched Subnet : ID is ${SUBNET_ID}"
 
 echo '📄 Creating .ec2-login file'
 echo '' > .ec2-login
@@ -94,10 +96,10 @@ create_sg "controller"
 export CONTROLLER_NODE_SG=${SG_ID}
 create_sg "worker"
 export WORKER_NODE_SG=${SG_ID}
-launch_ec2 "controller" "${AL_2023_AMI_AMD}" "${AMD_INSTANCE_TYPE}" "${CONTROLLER_NODE_SG}"
-export CONTROLLER_IP=${IP}
-copy_key_to_controller "${CONTROLLER_IP}"
-# launch_ec2 "al2023-amd" "${AL_2023_AMI_AMD}" "${AMD_INSTANCE_TYPE}" "${WORKER_NODE_SG}"
-# launch_ec2 "ubuntu-amd" "${UBUNTU_AMI_AMD}" "${AMD_INSTANCE_TYPE}" "${WORKER_NODE_SG}"
-# launch_ec2 "al2023-arm" "${AL_2023_AMI_ARM}" "${ARM_INSTANCE_TYPE}" "${WORKER_NODE_SG}"
-# launch_ec2 "ubuntu-arm" "${UBUNTU_AMI_ARM}" "${ARM_INSTANCE_TYPE}" "${WORKER_NODE_SG}"
+# launch_ec2 "controller" "${AL_2023_AMI_AMD}" "${AMD_INSTANCE_TYPE}" "${CONTROLLER_NODE_SG}"
+# export CONTROLLER_IP=${IP}
+# copy_key_to_controller "${CONTROLLER_IP}"
+launch_ec2 "al2023-amd" "${AL_2023_AMI_AMD}" "${AMD_INSTANCE_TYPE}" "${WORKER_NODE_SG}"
+launch_ec2 "ubuntu-amd" "${UBUNTU_AMI_AMD}" "${AMD_INSTANCE_TYPE}" "${WORKER_NODE_SG}" "${UBUNTU_USER}"
+launch_ec2 "al2023-arm" "${AL_2023_AMI_ARM}" "${ARM_INSTANCE_TYPE}" "${WORKER_NODE_SG}"
+launch_ec2 "ubuntu-arm" "${UBUNTU_AMI_ARM}" "${ARM_INSTANCE_TYPE}" "${WORKER_NODE_SG}" "${UBUNTU_USER}"
