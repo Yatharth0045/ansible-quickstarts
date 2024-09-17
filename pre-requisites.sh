@@ -89,17 +89,33 @@ echo "✅ Fetched VPC : ID is ${VPC_ID}"
 export SUBNET_ID=$(aws ec2 describe-subnets --query "Subnets[*].{ID:SubnetId,VPC:VpcId,CIDR:CidrBlock,AZ:AvailabilityZone}" --output json | jq -r --arg ZONE "$ZONE" '.[] | select(.AZ == $ZONE) | .ID ')
 echo "✅ Fetched Subnet : ID is ${SUBNET_ID}"
 
+## Creating login file
 echo '📄 Creating .ec2-login file'
 echo '' > .ec2-login
+
+## Generating key_pair
 create_key_pair
+
+## Creating controller node sg
 create_sg "controller"
 export CONTROLLER_NODE_SG=${SG_ID}
+
+## Creating worker node sg
 create_sg "worker"
 export WORKER_NODE_SG=${SG_ID}
+
+## Launching controller node
 launch_ec2 "controller" "${AL_2023_AMI_AMD}" "${AMD_INSTANCE_TYPE}" "${CONTROLLER_NODE_SG}"
 export CONTROLLER_IP=${IP}
 copy_key_to_controller "${CONTROLLER_IP}"
+
+## Launching worker nodes for node_exporter
 launch_ec2 "al2023-amd" "${AL_2023_AMI_AMD}" "${AMD_INSTANCE_TYPE}" "${WORKER_NODE_SG}"
 launch_ec2 "ubuntu-amd" "${UBUNTU_AMI_AMD}" "${AMD_INSTANCE_TYPE}" "${WORKER_NODE_SG}" "${UBUNTU_USER}"
 launch_ec2 "al2023-arm" "${AL_2023_AMI_ARM}" "${ARM_INSTANCE_TYPE}" "${WORKER_NODE_SG}"
 launch_ec2 "ubuntu-arm" "${UBUNTU_AMI_ARM}" "${ARM_INSTANCE_TYPE}" "${WORKER_NODE_SG}" "${UBUNTU_USER}"
+
+## Launching elasticsearch nodes
+launch_ec2 "elastic_search_master" "${AL_2023_AMI_AMD}" "${AMD_INSTANCE_TYPE}" "${WORKER_NODE_SG}"
+launch_ec2 "elastic_search_data" "${AL_2023_AMI_AMD}" "${AMD_INSTANCE_TYPE}" "${WORKER_NODE_SG}"
+launch_ec2 "elastic_search_client" "${AL_2023_AMI_AMD}" "${AMD_INSTANCE_TYPE}" "${WORKER_NODE_SG}"

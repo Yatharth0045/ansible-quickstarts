@@ -2,6 +2,11 @@
 
 set -e
 
+## Use kk profile
+echo 'Loading AWS Profile: KodeKloud'
+export AWS_PROFILE='kodekloud'
+export AWS_REGION='us-east-1'
+
 ## Setting variables
 export KEY_NAME='kk-yatharth'
 export KEY_PAIR_PATH="${HOME}/Downloads/${KEY_NAME}.pem"
