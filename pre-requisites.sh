@@ -70,6 +70,17 @@ launch_ec2() {
     echo "📄 Stored login info to file : .ec2-login"
 }
 
+copy_key_to_controller() {
+    export IP=$1
+    export USER=${2:-'ec2-user'}
+    export KEY_NAME=${3:-'kk-yatharth'}
+    echo "⏳ Copying SSH key to controller node ..."
+    sleep 10
+    echo "scp -i ${KEY_PAIR_PATH} ${KEY_PAIR_PATH} ${USER}@${IP}:${KEY_NAME}"
+    scp -i ${KEY_PAIR_PATH} ${KEY_PAIR_PATH} ${USER}@${IP}:${KEY_NAME}
+    echo "✅ Copied SSH key to controller node"
+}
+
 ## Export vpc and subnet id
 export VPC_ID=$(aws ec2 describe-vpcs --query "Vpcs[*].{ID:VpcId,CIDR:CidrBlock}" --output json | jq -r '.[0] | .ID')
 echo "✅ Fetched VPC : ID is ${VPC_ID}"
@@ -84,6 +95,8 @@ export CONTROLLER_NODE_SG=${SG_ID}
 create_sg "worker"
 export WORKER_NODE_SG=${SG_ID}
 launch_ec2 "controller" "${AL_2023_AMI_AMD}" "${AMD_INSTANCE_TYPE}" "${CONTROLLER_NODE_SG}"
+export CONTROLLER_IP=${IP}
+copy_key_to_controller "${CONTROLLER_IP}"
 # launch_ec2 "al2023-amd" "${AL_2023_AMI_AMD}" "${AMD_INSTANCE_TYPE}" "${WORKER_NODE_SG}"
 # launch_ec2 "ubuntu-amd" "${UBUNTU_AMI_AMD}" "${AMD_INSTANCE_TYPE}" "${WORKER_NODE_SG}"
 # launch_ec2 "al2023-arm" "${AL_2023_AMI_ARM}" "${ARM_INSTANCE_TYPE}" "${WORKER_NODE_SG}"
