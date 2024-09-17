@@ -1,0 +1,73 @@
+---
+# tasks file for node_exporter
+- name: Create node_exporter user
+  user:
+    name: "{{ node_exporter_user }}"
+    shell: /sbin/nologin
+
+- name: Download Node Exporter for AMD Arch
+  get_url:
+    url: "https://github.com/prometheus/node_exporter/releases/download/v{{ node_exporter_version }}/node_exporter-{{ node_exporter_version }}.linux-amd64.tar.gz"
+    dest: /tmp/node_exporter.tar.gz
+  when: ansible_facts['architecture'] == "x86_64"
+
+- name: Download Node Exporter for ARM Arch
+  get_url:
+    url: "https://github.com/prometheus/node_exporter/releases/download/v{{ node_exporter_version }}/node_exporter-{{ node_exporter_version }}.linux-arm64.tar.gz"
+    dest: /tmp/node_exporter.tar.gz
+  when: ansible_facts['architecture'] == "aarch64"
+
+- name: Extract Node Exporter
+  unarchive:
+    src: /tmp/node_exporter.tar.gz
+    dest: /tmp
+    remote_src: yes
+
+- name: Move Node Exporter binary to the installation directory - AMD Arch
+  command: mv /tmp/node_exporter-{{ node_exporter_version }}.linux-amd64/node_exporter {{ node_exporter_install_dir }}
+  when: ansible_facts['architecture'] == "x86_64"
+
+- name: Move Node Exporter binary to the installation directory - ARM Arch
+  command: mv /tmp/node_exporter-{{ node_exporter_version }}.linux-arm64/node_exporter {{ node_exporter_install_dir }}
+  when: ansible_facts['architecture'] == "aarch64"
+
+- name: Create node_exporter group
+  group:
+    name: "{{ node_exporter_user }}"
+    state: present
+
+- name: Set permissions for Node Exporter binary
+  file:
+    path: "{{ node_exporter_install_dir }}/node_exporter"
+    owner: "{{ node_exporter_user }}"
+    group: "{{ node_exporter_user }}"
+    mode: '0755'
+
+- name: Create systemd service file for Node Exporter
+  template:
+    src: node_exporter.service.j2
+    dest: /etc/systemd/system/node_exporter.service
+  notify:
+    - Restart Node Exporter
+
+- name: Enable Node Exporter service
+  systemd:
+    name: node_exporter
+    enabled: yes
+    state: started
+
+- name: Clean up temporary files - AMD
+  file:
+    path: /tmp/node_exporter-{{ node_exporter_version }}.linux-amd64
+    state: absent
+  when: ansible_facts['architecture'] == "x86_64"
+
+- name: Clean up temporary files - ARM
+  file:
+    path: /tmp/node_exporter-{{ node_exporter_version }}.linux-arm64
+    state: absent
+  when: ansible_facts['architecture'] == "aarch64"
+
+
+
+

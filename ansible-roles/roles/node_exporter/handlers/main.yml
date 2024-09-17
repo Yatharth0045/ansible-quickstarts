@@ -1,0 +1,7 @@
+---
+# handlers file for node_exporter
+- name: Restart Node Exporter
+  systemd:
+    name: node_exporter
+    state: restarted
+    enabled: yes

@@ -1,6 +1,14 @@
 [amd_instances]
-ec2_user_amd ansible_host=54.236.227.130 ansible_user=ec2-user ansible_ssh_private_key_file='/Users/yatharth_1/Downloads/kk-yatharth.pem'
-ubuntu_user_amd ansible_host=54.175.37.108 ansible_user=ubuntu ansible_ssh_private_key_file='/Users/yatharth_1/Downloads/kk-yatharth.pem'
+ec2_user_amd ansible_host=18.212.119.153 ansible_user=ec2-user ansible_ssh_private_key_file='/Users/yatharth_1/Downloads/kk-yatharth.pem'
+ubuntu_user_amd ansible_host=54.91.157.228 ansible_user=ubuntu ansible_ssh_private_key_file='/Users/yatharth_1/Downloads/kk-yatharth.pem'
+
+[arm_instances]
+ec2_user_arm ansible_host=54.89.254.235 ansible_user=ec2-user ansible_ssh_private_key_file='/Users/yatharth_1/Downloads/kk-yatharth.pem'
+ubuntu_user_arm ansible_host=34.228.190.45 ansible_user=ubuntu ansible_ssh_private_key_file='/Users/yatharth_1/Downloads/kk-yatharth.pem'
+
+[node_exporter:children]
+amd_instances
+arm_instances
 
 ; [arm_instances]
 ; ec2_user_arm ansible_host=10.10.3.173 ansible_user=ec2-user

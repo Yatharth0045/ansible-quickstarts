@@ -1,3 +1,0 @@
-## amd_instance
-
-ansible amd_instances -i inventory -m ping

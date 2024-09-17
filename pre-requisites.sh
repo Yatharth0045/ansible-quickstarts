@@ -10,7 +10,7 @@ export AWS_REGION='us-east-1'
 ## Setting variables
 export KEY_NAME='kk-yatharth'
 export KEY_PAIR_PATH="${HOME}/Downloads/${KEY_NAME}.pem"
-export ZONE='us-east-1a'
+export ZONE='us-east-1b'
 export AL_2023_AMI_AMD='ami-0182f373e66f89c85'
 export UBUNTU_AMI_AMD='ami-0e86e20dae9224db8'
 export AL_2023_AMI_ARM='ami-0b947c5d5516fa06e'
@@ -96,9 +96,9 @@ create_sg "controller"
 export CONTROLLER_NODE_SG=${SG_ID}
 create_sg "worker"
 export WORKER_NODE_SG=${SG_ID}
-# launch_ec2 "controller" "${AL_2023_AMI_AMD}" "${AMD_INSTANCE_TYPE}" "${CONTROLLER_NODE_SG}"
-# export CONTROLLER_IP=${IP}
-# copy_key_to_controller "${CONTROLLER_IP}"
+launch_ec2 "controller" "${AL_2023_AMI_AMD}" "${AMD_INSTANCE_TYPE}" "${CONTROLLER_NODE_SG}"
+export CONTROLLER_IP=${IP}
+copy_key_to_controller "${CONTROLLER_IP}"
 launch_ec2 "al2023-amd" "${AL_2023_AMI_AMD}" "${AMD_INSTANCE_TYPE}" "${WORKER_NODE_SG}"
 launch_ec2 "ubuntu-amd" "${UBUNTU_AMI_AMD}" "${AMD_INSTANCE_TYPE}" "${WORKER_NODE_SG}" "${UBUNTU_USER}"
 launch_ec2 "al2023-arm" "${AL_2023_AMI_ARM}" "${ARM_INSTANCE_TYPE}" "${WORKER_NODE_SG}"

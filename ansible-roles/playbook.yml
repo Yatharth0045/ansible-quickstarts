@@ -1,0 +1,21 @@
+---
+- hosts: all
+  become: true
+  gather_facts: false
+  tasks:
+  - name: Ping servers
+    ping:
+
+  - name: Display facts
+    debug:
+      var: ansible_facts
+
+- hosts: node_exporter
+  become: true
+  roles:
+    - node_exporter
+
+# - hosts: elasticsearch
+#   become: true
+#   roles:
+#     - elasticsearch

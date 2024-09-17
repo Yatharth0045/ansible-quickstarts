@@ -59,6 +59,12 @@ ansible-config dump
 ansible-config init --disabled -t all > ansible.cfg
 ```
 
+### Create a role
+```bash
+cd roles/
+ansible-galaxy role init <role-name>
+```
+
 ### Running against localhost, group: [local]
 ansible local -i inventory -m ping
 ansible local -i inventory -m gather_facts
