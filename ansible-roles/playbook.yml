@@ -15,7 +15,7 @@
   roles:
     - node_exporter
 
-# - hosts: elasticsearch
-#   become: true
-#   roles:
-#     - elasticsearch
+- hosts: elastic_search
+  become: true
+  roles:
+    - elasticsearch
