@@ -1,0 +1,53 @@
+---
+# tasks file for elasticsearch
+- name: Install Java 11 Corretto
+  yum:
+    name: java-11-amazon-corretto-headless
+    state: present
+    update_cache: yes
+  when: ansible_os_family == "RedHat"
+
+- name: Import Elasticsearch GPG key
+  ansible.builtin.rpm_key:
+    state: present
+    key: https://artifacts.elastic.co/GPG-KEY-elasticsearch
+  when: ansible_os_family == "RedHat"
+
+- name: Add Elasticsearch 6.x repository
+  yum_repository:
+    name: elasticsearch-6.x
+    description: Elasticsearch repository for 6.x packages
+    baseurl: https://artifacts.elastic.co/packages/6.x/yum
+    gpgcheck: 1
+    gpgkey: https://artifacts.elastic.co/GPG-KEY-elasticsearch
+    enabled: yes
+  when: ansible_os_family == "RedHat"
+
+- name: Install Elasticsearch
+  yum:
+    name: elasticsearch-{{ elasticsearch_version }}
+    state: present
+    update_cache: yes
+
+- name: Reload systemd to apply changes
+  ansible.builtin.command:
+    cmd: systemctl daemon-reload
+
+- name: Copy Elasticsearch configuration
+  template:
+    src: elasticsearch.yml.j2
+    dest: /etc/elasticsearch/elasticsearch.yml
+    owner: elasticsearch
+    group: elasticsearch
+    mode: 0644
+  notify: restart elasticsearch
+
+- name: Enable and start Elasticsearch service
+  systemd:
+    name: elasticsearch
+    enabled: yes
+    state: started
+
+- name: Wait for Elasticsearch to start
+  pause:
+    seconds: 15

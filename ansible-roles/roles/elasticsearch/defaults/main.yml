@@ -1,0 +1,9 @@
+---
+# defaults file for elasticsearch
+elasticsearch_version: "6.8.23"
+es_cluster_name: "my-es-cluster"
+es_node_master: true
+es_node_data: true
+es_node_ingest: true
+es_network_host: "0.0.0.0"
+ansible_become: true

@@ -1,0 +1,27 @@
+# Elasticsearch Configuration Template
+
+# Cluster settings
+cluster.name: "{{ es_cluster_name }}"
+node.name: "{{ inventory_hostname }}"
+path.data: /var/lib/elasticsearch
+path.logs: /var/log/elasticsearch
+
+# Network settings
+network.host: "{{ es_network_host | default('0.0.0.0') }}"
+http.port: 9200
+
+# Node roles
+node.master: {{ es_node_master | default(true) }}
+node.data: {{ es_node_data | default(true) }}
+node.ingest: {{ es_node_ingest | default(true) }}
+
+# Disable Ml roles
+xpack.ml.enabled: false
+
+# Discovery settings (for clustering)
+discovery.zen.ping.unicast.hosts:
+  {% for host in groups['elastic_search_master'] %}
+  - {{ hostvars[host]['ansible_host'] }}
+  {% endfor %}
+
+discovery.zen.minimum_master_nodes: 2
