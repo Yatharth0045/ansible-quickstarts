@@ -24,4 +24,4 @@ discovery.zen.ping.unicast.hosts:
   - {{ hostvars[host]['ansible_host'] }}
   {% endfor %}
 
-discovery.zen.minimum_master_nodes: 2
+discovery.zen.minimum_master_nodes: {{ es_min_masters }}

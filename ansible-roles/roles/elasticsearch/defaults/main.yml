@@ -7,3 +7,5 @@ es_node_data: true
 es_node_ingest: true
 es_network_host: "0.0.0.0"
 ansible_become: true
+# For single node: 1, For 3 node: 2
+es_min_masters: 2
