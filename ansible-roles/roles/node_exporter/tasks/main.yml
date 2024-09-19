@@ -67,7 +67,3 @@
     path: /tmp/node_exporter-{{ node_exporter_version }}.linux-arm64
     state: absent
   when: ansible_facts['architecture'] == "aarch64"
-
-
-
-
