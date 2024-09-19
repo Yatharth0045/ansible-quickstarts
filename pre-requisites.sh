@@ -44,11 +44,11 @@ create_sg() {
     echo "⏳ Creating Sg for $NODE_NAME node .... "
     if aws ec2 describe-security-groups --group-names ansible-${NODE_NAME}-sg > /dev/null 2>&1; then
         echo "✅ Security group ansible-${NODE_NAME}-sg already exists, skipping creation"
-        export SG_ID=$(aws ec2 describe-security-groups --group-names ansible-controller-sg | jq -r '.SecurityGroups[0] | .GroupId')
+        export SG_ID=$(aws ec2 describe-security-groups --group-names ansible-${NODE_NAME}-sg | jq -r '.SecurityGroups[0] | .GroupId')
     else
         echo "Security group ansible-${NODE_NAME}-sg does not exist, creating a new one"
         export SG_ID=$(aws ec2 create-security-group --group-name ansible-${NODE_NAME}-sg --description "My security group for Ansible EC2 instance" --vpc-id ${VPC_ID} | jq -r '.GroupId')
-        echo "✅ Created Security group for controller node : ID is ${SG_ID}"
+        echo "✅ Created Security group for $NODE_NAME : ID is ${SG_ID}"
         echo "⏳ Opening all ports in ${NODE_NAME} sg .... "
         export RESULT=$(aws ec2 authorize-security-group-ingress --group-id ${SG_ID} --protocol -1 --port all --cidr 0.0.0.0/0 | jq -r '.Return')
         echo "✅ Opened all ports for ${NODE_NAME}"
@@ -64,9 +64,9 @@ launch_ec2() {
     export KEY_NAME=${6:-'kk-yatharth'}
     echo "⏳ Creating EC2 ${NODE_NAME} instance"
     export NODE_ID=$(aws ec2 run-instances --image-id ${AMI_ID} --instance-type ${INSTANCE_TYPE} --key-name ${KEY_NAME} --security-group-ids ${SG_ID} --subnet-id ${SUBNET_ID} --count 1 --tag-specifications "ResourceType=instance,Tags=[{Key=Name,Value=Ansible-${NODE_NAME}-node}]" | jq -r '.Instances[0].InstanceId')
-    echo "✅ Created controller node: ID is ${NODE_ID}"
+    echo "✅ Created $NODE_NAME node: ID is ${NODE_ID}"
     IP=$(aws ec2 describe-instances --instance-ids ${NODE_ID} --query "Reservations[*].Instances[*].PublicIpAddress" --output text)
-    echo "✅ SSH for controller node: ssh -i ${KEY_PAIR_PATH} ${USER}@${IP}"
+    echo "✅ SSH for $NODE_NAME node: ssh -i ${KEY_PAIR_PATH} ${USER}@${IP}"
     echo "${NODE_NAME} : ssh -i ${KEY_PAIR_PATH} ${USER}@${IP}" >> .ec2-login
     echo "📄 Stored login info to file : .ec2-login"
 }
