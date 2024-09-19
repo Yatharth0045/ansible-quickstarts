@@ -20,7 +20,7 @@ xpack.ml.enabled: false
 
 # Discovery settings (for clustering)
 discovery.zen.ping.unicast.hosts:
-  {% for host in groups['elastic_search_master'] %}
+  {% for host in groups['elastic_search'] %}
   - {{ hostvars[host]['ansible_host'] }}
   {% endfor %}
 
