@@ -1,0 +1,44 @@
+---
+- name: Import Wazuh GPG Key - AL2023
+  ansible.builtin.rpm_key:
+    state: present
+    key: https://packages.wazuh.com/key/GPG-KEY-WAZUH
+  when: ansible_os_family == "RedHat"
+
+- name: Import Wazuh GPG Key - Ubuntu
+  ansible.builtin.apt_key:
+    state: present
+    url: https://packages.wazuh.com/key/GPG-KEY-WAZUH
+  when: ansible_os_family == "Debian"
+
+- name: Add Wazuh repository
+  yum_repository:
+    name: Wazuh repository
+    description: Wazuh repository
+    baseurl: https://packages.wazuh.com/4.x/yum/
+    gpgcheck: 1
+    gpgkey: https://packages.wazuh.com/key/GPG-KEY-WAZUH
+    enabled: yes
+  when: ansible_os_family == "RedHat"
+
+- name: Add the Wazuh repository
+  apt_repository:
+    repo: "deb https://packages.wazuh.com/4.x/apt/ stable main"
+  when: ansible_os_family == "Debian"
+
+- name: Install Wazuh agent
+  package:
+    name: wazuh-agent
+    state: present
+
+- name: Replace Manager's IP
+  ansible.builtin.replace:
+    path: /var/ossec/etc/ossec.conf
+    regexp: 'MANAGER_IP'
+    replace: "{{ wazuh_manager_ip }}"
+
+- name: Enable and start Wazuh agent service
+  systemd:
+    name: wazuh-agent
+    enabled: yes
+    state: started

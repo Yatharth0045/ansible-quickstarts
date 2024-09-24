@@ -1,0 +1,4 @@
+---
+# defaults file for wazuh_agent
+wazuh_manager_ip: "10.0.4.171"
+wazuh_agent_version: "4.8.2"

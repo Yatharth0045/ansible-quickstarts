@@ -10,7 +10,7 @@
     debug:
       var: ansible_facts
 
-- hosts: node_exporter
+- hosts: nodes
   become: true
   roles:
     - node_exporter
@@ -19,3 +19,8 @@
   become: true
   roles:
     - elasticsearch
+
+- hosts: nodes
+  become: true
+  roles:
+    - wazuh_agent

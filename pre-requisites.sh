@@ -119,3 +119,6 @@ launch_ec2 "ubuntu-arm" "${UBUNTU_AMI_ARM}" "${ARM_INSTANCE_TYPE}" "${WORKER_NOD
 launch_ec2 "elastic_search_master_1" "${AL_2023_AMI_AMD}" "${AMD_INSTANCE_TYPE}" "${WORKER_NODE_SG}"
 launch_ec2 "elastic_search_master_2" "${AL_2023_AMI_AMD}" "${AMD_INSTANCE_TYPE}" "${WORKER_NODE_SG}"
 launch_ec2 "elastic_search_master_3" "${AL_2023_AMI_AMD}" "${AMD_INSTANCE_TYPE}" "${WORKER_NODE_SG}"
+
+## Launch wazuh server
+launch_ec2 "wazuh-server-al2023-amd" "${AL_2023_AMI_AMD}" "${AMD_INSTANCE_TYPE}" "${WORKER_NODE_SG}"
