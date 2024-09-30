@@ -1,0 +1,7 @@
+---
+# handlers file for tomcat
+- name: restart tomcat
+  become: yes
+  systemd:
+    name: "{{ tomcat_service_name }}"
+    state: restarted

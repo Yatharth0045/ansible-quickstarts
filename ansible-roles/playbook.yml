@@ -24,3 +24,8 @@
   become: true
   roles:
     - wazuh_agent
+
+- hosts: nodes
+  become: true
+  roles:
+    - tomcat

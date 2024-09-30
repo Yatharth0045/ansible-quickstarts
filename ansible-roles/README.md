@@ -43,3 +43,18 @@ To deploy the role
 cd ansible-roles
 ansible-playbook playbook.yml -i inventory
 ```
+
+Role Name: tomcat
+=========
+
+- Node Groups:
+    `nodes`
+    `amd_instances`
+    `arm_instances`
+
+To deploy the role
+
+```bash
+cd ansible-roles
+ansible-playbook playbook.yml -i inventory
+```

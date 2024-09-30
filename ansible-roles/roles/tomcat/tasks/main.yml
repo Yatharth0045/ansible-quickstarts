@@ -1,0 +1,86 @@
+---
+- name: Install dependencies - Debian
+  become: yes
+  apt:
+    name:
+      - openjdk-17-jre
+      - wget
+    state: present
+    update_cache: yes
+  when: ansible_os_family == "Debian"
+
+- name: Install dependencies - RedHat
+  become: yes
+  yum:
+    name:
+      - java-17
+      - wget
+    state: present
+    update_cache: yes
+  when: ansible_os_family == "RedHat"
+
+- name: Create tomcat group
+  become: yes
+  group:
+    name: "{{ tomcat_group }}"
+
+- name: Create tomcat user
+  become: yes
+  user:
+    name: "{{ tomcat_user }}"
+    group: "{{ tomcat_group }}"
+    home: "{{ tomcat_install_dir }}"
+    shell: /bin/false
+
+- name: Download Tomcat
+  become: yes
+  get_url:
+    url: "https://dlcdn.apache.org/tomcat/tomcat-{{ tomcat_version.split('.')[0] }}/v{{ tomcat_version }}/bin/apache-tomcat-{{ tomcat_version }}.tar.gz"
+    dest: /tmp/apache-tomcat-{{ tomcat_version }}.tar.gz
+
+- name: Create installation directory
+  become: yes
+  file:
+    path: "{{ tomcat_install_dir }}"
+    state: directory
+    owner: "{{ tomcat_user }}"
+    group: "{{ tomcat_group }}"
+
+- name: Extract Tomcat
+  become: yes
+  unarchive:
+    src: /tmp/apache-tomcat-{{ tomcat_version }}.tar.gz
+    dest: "{{ tomcat_install_dir }}"
+    remote_src: yes
+    creates: "{{ tomcat_install_dir }}/apache-tomcat-{{ tomcat_version }}"
+
+- name: Change permissions on Tomcat directory
+  become: yes
+  file:
+    path: "{{ tomcat_install_dir }}/apache-tomcat-{{ tomcat_version }}"
+    state: directory
+    owner: "{{ tomcat_user }}"
+    group: "{{ tomcat_group }}"
+    recurse: yes
+
+- name: Symlink to the latest Tomcat
+  become: yes
+  file:
+    src: "{{ tomcat_install_dir }}/apache-tomcat-{{ tomcat_version }}"
+    dest: "{{ tomcat_install_dir }}/latest"
+    state: link
+
+- name: Create systemd service file for Tomcat
+  become: yes
+  template:
+    src: tomcat.service.j2
+    dest: /etc/systemd/system/{{ tomcat_service_name }}.service
+  notify:
+    - restart tomcat
+
+- name: Enable and start Tomcat service
+  become: yes
+  systemd:
+    name: "{{ tomcat_service_name }}"
+    enabled: yes
+    state: started
